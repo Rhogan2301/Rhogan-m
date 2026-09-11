@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyAgent AI — Autonomous Student Learning Assistant</title>
+  <meta name="description" content="An autonomous agentic AI study assistant for students. Features ReAct reasoning, auto-generated flashcards, interactive quizzes, study plans, smart notes, and pomodoro timer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <div class="app-shell">
+    <!-- TOP NAVIGATION -->
+    <header class="navbar" id="app-header">
+      <div class="nav-brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">StudyAgent<span class="brand-accent">.AI</span></span>
+          <span class="brand-tagline">Agentic Learning Copilot</span>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <div class="engine-badge" id="engine-status-badge">
+          <span class="status-dot pulsing"></span>
+          <span id="engine-status-text">Autonomous Engine (Client ReAct)</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <button class="nav-btn" id="btn-open-settings" title="Settings & Gemini API" aria-label="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span class="btn-label">API Config</span>
+        </button>
+
+        <button class="nav-btn icon-btn" id="btn-toggle-theme" title="Toggle Theme" aria-label="Toggle Theme">
+          <span class="theme-icon-dark">🌙</span>
+          <span class="theme-icon-light">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- WORKSPACE BODY -->
+    <div class="workspace">
+      <!-- MAIN TABS CONTAINER -->
+      <main class="main-content">
+        <!-- NAVIGATION TABS -->
+        <nav class="tab-bar" role="tablist" aria-label="Workspace Views">
+          <button class="tab-btn active" data-tab="chat-tab" role="tab" aria-selected="true" id="tab-nav-chat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Agent Copilot</span>
+          </button>
+
+          <button class="tab-btn" data-tab="flashcards-tab" role="tab" aria-selected="false" id="tab-nav-flashcards">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="M7 15h10M7 9h10"></path>
+            </svg>
+            <span>Flashcards</span>
+            <span class="badge" id="badge-flashcards">0</span>
+          </button>
+
+          <button class="tab-btn" data-tab="quiz-tab" role="tab" aria-selected="false" id="tab-nav-quiz">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>Quiz Arena</span>
+            <span class="badge" id="badge-quiz">0</span>
+          </button>
+
+          <button class="tab-btn" data-tab="planner-tab" role="tab" aria-selected="false" id="tab-nav-planner">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Study Plan</span>
+            <span class="badge" id="badge-planner">0</span>
+          </button>
+
+          <button class="tab-btn" data-tab="notes-tab" role="tab" aria-selected="false" id="tab-nav-notes">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Smart Notes</span>
+            <span class="badge" id="badge-notes">0</span>
+          </button>
+
+          <button class="tab-btn" data-tab="timer-tab" role="tab" aria-selected="false" id="tab-nav-timer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Pomodoro</span>
+          </button>
+        </nav>
+
+        <!-- VIEW 1: AGENT COPILOT CHAT -->
+        <section class="tab-panel active" id="chat-tab" role="tabpanel">
+          <div class="chat-container">
+            <!-- QUICK PROMPT CHIPS -->
+            <div class="quick-prompts-bar">
+              <span class="quick-label">⚡ One-Click Study Missions:</span>
+              <div class="quick-chips">
+                <button class="chip-btn" data-prompt="Prepare me for a Biology exam on Cell Mitosis with study steps, 5 flashcards, and a 3-question quiz.">
+                  🧬 Mitosis Exam Cram
+                </button>
+                <button class="chip-btn" data-prompt="Explain Newton's Three Laws of Motion with real-world examples, step-by-step formula solver, and flashcards.">
+                  ⚡ Newton's Laws
+                </button>
+                <button class="chip-btn" data-prompt="Teach me quadratic equations: standard formula, factoring steps, 3 flashcards, and a practice quiz.">
+                  📐 Quadratic Equations
+                </button>
+                <button class="chip-btn" data-prompt="Give me a 3-day study schedule and cheatsheet on World War II key turning points and causes.">
+                  📜 World War II Timeline
+                </button>
+                <button class="chip-btn" data-prompt="Explain Python functions, parameters vs arguments, return values, and generate flashcards.">
+                  🐍 Python Functions
+                </button>
+              </div>
+            </div>
+
+            <!-- CHAT MESSAGES STREAM -->
+            <div class="messages-stream" id="messages-stream">
+              <!-- Welcome Agent Message -->
+              <div class="message-card agent-message">
+                <div class="message-header">
+                  <div class="agent-avatar">🤖</div>
+                  <div class="agent-meta">
+                    <span class="agent-name">StudyAgent Copilot</span>
+                    <span class="agent-time">Online</span>
+                  </div>
+                  <span class="agent-role-pill">Autonomous ReAct Agent</span>
+                </div>
+                <div class="message-body">
+                  <p>Hello! I am your <strong>Agentic AI Study Assistant</strong>. Tell me what subject or topic you're working on, and I'll autonomously:</p>
+                  <ul class="agent-feature-list">
+                    <li>🧠 <strong>Decompose your goal</strong> into a structured study roadmap</li>
+                    <li>🗂️ <strong>Generate interactive flashcards</strong> and save them to your active deck</li>
+                    <li>🎯 <strong>Build customized practice quizzes</strong> with instant grading</li>
+                    <li>📝 <strong>Synthesize cheat sheets</strong> & key formulas into your Notebook</li>
+                    <li>⏱️ <strong>Start targeted Pomodoro focus timers</strong> for high-retention sessions</li>
+                  </ul>
+                  <p class="callout-hint">💡 <em>Try clicking one of the sample missions above, or type your own topic below!</em></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- AGENT INPUT CONTAINER -->
+            <div class="chat-input-wrapper">
+              <form id="chat-form" class="chat-form">
+                <div class="input-controls-row">
+                  <div class="tool-intent-tags">
+                    <span class="tag-title">Autonomous Tools:</span>
+                    <label class="tool-checkbox-label">
+                      <input type="checkbox" id="tool-opt-flashcards" checked>
+                      <span>🗂️ Flashcards</span>
+                    </label>
+                    <label class="tool-checkbox-label">
+                      <input type="checkbox" id="tool-opt-quiz" checked>
+                      <span>🎯 Quiz</span>
+                    </label>
+                    <label class="tool-checkbox-label">
+                      <input type="checkbox" id="tool-opt-plan" checked>
+                      <span>📅 Plan</span>
+                    </label>
+                    <label class="tool-checkbox-label">
+                      <input type="checkbox" id="tool-opt-notes" checked>
+                      <span>📝 Notes</span>
+                    </label>
+                  </div>
+                  <button type="button" class="btn-text-action" id="btn-clear-chat" title="Clear Chat History">Clear Chat</button>
+                </div>
+
+                <div class="input-box-container">
+                  <textarea 
+                    id="student-input" 
+                    placeholder="Ask anything (e.g. 'Teach me Photosynthesis and make 4 flashcards with a quiz', 'Solve x^2 - 5x + 6 = 0 step by step')..."
+                    rows="2"
+                    required
+                  ></textarea>
+                  <button type="submit" id="btn-send-message" class="btn-send" aria-label="Send query">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Execute</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: FLASHCARDS DECK -->
+        <section class="tab-panel" id="flashcards-tab" role="tabpanel">
+          <div class="panel-inner">
+            <div class="panel-header-row">
+              <div>
+                <h2 class="panel-title">Active Study Deck</h2>
+                <p class="panel-subtitle">Interactive 3D flashcards generated autonomously by your Study Agent</p>
+              </div>
+              <div class="panel-actions">
+                <button class="action-btn" id="btn-shuffle-cards">🔀 Shuffle</button>
+                <button class="action-btn" id="btn-add-manual-card">+ New Card</button>
+                <button class="action-btn danger-btn" id="btn-clear-cards">Clear Deck</button>
+              </div>
+            </div>
+
+            <div class="flashcards-deck-view" id="flashcards-deck-view">
+              <!-- Empty State -->
+              <div class="empty-state" id="flashcards-empty-state">
+                <div class="empty-icon">🗂️</div>
+                <h3>No Flashcards In Deck</h3>
+                <p>Ask StudyAgent in the chat tab (e.g., <em>"Make 5 flashcards for Cell Respiration"</em>) or click below to add one manually!</p>
+                <button class="primary-btn" id="btn-sample-flashcards">Load Sample Biology Deck</button>
+              </div>
+
+              <!-- Interactive Card Viewer -->
+              <div class="card-viewer-container" id="card-viewer-container" style="display: none;">
+                <div class="deck-progress-bar">
+                  <div class="progress-fill" id="card-progress-fill" style="width: 20%;"></div>
+                </div>
+                <div class="deck-status-line">
+                  <span id="card-index-indicator">Card 1 of 5</span>
+                  <span class="mastery-indicator" id="card-mastery-status">Status: New</span>
+                </div>
+
+                <div class="card-3d-wrapper" id="flashcard-flipper">
+                  <div class="flashcard-inner">
+                    <!-- Front -->
+                    <div class="flashcard-face flashcard-front">
+                      <div class="card-category-tag" id="card-tag-front">Concept</div>
+                      <div class="card-content-center">
+                        <h3 class="card-term" id="card-front-text">Question / Term</h3>
+                      </div>
+                      <div class="card-footer-hint">🔄 Tap or Click to Reveal Answer</div>
+                    </div>
+                    <!-- Back -->
+                    <div class="flashcard-face flashcard-back">
+                      <div class="card-category-tag" id="card-tag-back">Explanation</div>
+                      <div class="card-content-center">
+                        <p class="card-explanation" id="card-back-text">Explanation or formula details appear here.</p>
+                      </div>
+                      <div class="card-footer-hint">🔄 Tap to Flip Back</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="card-controls-row">
+                  <button class="card-nav-btn" id="btn-card-prev" title="Previous Card">← Prev</button>
+                  <div class="mastery-buttons">
+                    <button class="mastery-btn btn-again" id="btn-card-again" title="Mark as Need Practice">
+                      ⚠️ Needs Practice
+                    </button>
+                    <button class="mastery-btn btn-known" id="btn-card-mastered" title="Mark as Mastered">
+                      ✅ Got It!
+                    </button>
+                  </div>
+                  <button class="card-nav-btn" id="btn-card-next" title="Next Card">Next →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: QUIZ ARENA -->
+        <section class="tab-panel" id="quiz-tab" role="tabpanel">
+          <div class="panel-inner">
+            <div class="panel-header-row">
+              <div>
+                <h2 class="panel-title">Interactive Quiz Arena</h2>
+                <p class="panel-subtitle">Test your retention with instant grading and detailed explanations</p>
+              </div>
+              <div class="panel-actions">
+                <button class="action-btn" id="btn-restart-quiz">🔄 Reset Quiz</button>
+                <button class="action-btn danger-btn" id="btn-clear-quiz">Clear Quiz</button>
+              </div>
+            </div>
+
+            <div id="quiz-empty-state" class="empty-state">
+              <div class="empty-icon">🎯</div>
+              <h3>No Active Quiz</h3>
+              <p>Ask the agent in Chat to generate a quiz (e.g. <em>"Create a 4-question quiz on World War 2"</em>) or load an interactive demo quiz.</p>
+              <button class="primary-btn" id="btn-load-sample-quiz">Load Sample Physics Quiz</button>
+            </div>
+
+            <div id="quiz-active-container" class="quiz-container" style="display: none;">
+              <!-- Score Bar -->
+              <div class="quiz-score-banner">
+                <div class="score-info">
+                  <span class="score-label">Quiz Progress</span>
+                  <span class="score-value" id="quiz-progress-text">0/0 Answered</span>
+                </div>
+                <div class="score-stats">
+                  <span class="stat-pill success" id="quiz-correct-count">Correct: 0</span>
+                  <span class="stat-pill danger" id="quiz-incorrect-count">Missed: 0</span>
+                </div>
+              </div>
+
+              <!-- Question List -->
+              <div class="questions-list" id="questions-list">
+                <!-- Dynamically injected questions -->
+              </div>
+
+              <!-- Quiz Complete Summary Banner -->
+              <div class="quiz-summary-card" id="quiz-summary-card" style="display: none;">
+                <div class="summary-icon">🏆</div>
+                <h3 id="quiz-final-score-title">Quiz Completed!</h3>
+                <p id="quiz-final-score-desc">You scored 3 out of 3 (100%)</p>
+                <div class="summary-actions">
+                  <button class="primary-btn" id="btn-quiz-retry">Try Again</button>
+                  <button class="action-btn" id="btn-quiz-reinforce">Ask Agent for Weak Point Review</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: STUDY PLANNER -->
+        <section class="tab-panel" id="planner-tab" role="tabpanel">
+          <div class="panel-inner">
+            <div class="panel-header-row">
+              <div>
+                <h2 class="panel-title">Autonomous Study Roadmap</h2>
+                <p class="panel-subtitle">Actionable study plan with time estimates, milestones, and checklists</p>
+              </div>
+              <div class="panel-actions">
+                <button class="action-btn" id="btn-add-plan-task">+ Add Task</button>
+                <button class="action-btn danger-btn" id="btn-clear-plan">Clear Plan</button>
+              </div>
+            </div>
+
+            <!-- Progress tracker -->
+            <div class="plan-progress-card">
+              <div class="plan-progress-header">
+                <span class="plan-topic-title" id="plan-subject-title">Target Goal: General Revision</span>
+                <span class="plan-stats-text" id="plan-completion-stats">0 of 0 Completed</span>
+              </div>
+              <div class="plan-progress-bar">
+                <div class="progress-fill" id="plan-progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <div id="planner-empty-state" class="empty-state">
+              <div class="empty-icon">📅</div>
+              <h3>No Study Plan Generated</h3>
+              <p>Ask StudyAgent in Chat (e.g., <em>"Plan a 4-hour study schedule for Calculus derivatives"</em>) or load a sample plan.</p>
+              <button class="primary-btn" id="btn-load-sample-plan">Load Sample 3-Day Plan</button>
+            </div>
+
+            <div id="planner-tasks-container" class="planner-tasks-list" style="display: none;">
+              <!-- Tasks will be rendered here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: SMART NOTES -->
+        <section class="tab-panel" id="notes-tab" role="tabpanel">
+          <div class="panel-inner">
+            <div class="panel-header-row">
+              <div>
+                <h2 class="panel-title">Smart Revision Notes & Formulas</h2>
+                <p class="panel-subtitle">Synthesized key concepts, summary tables, and cheat sheets</p>
+              </div>
+              <div class="panel-actions">
+                <button class="action-btn" id="btn-copy-notes">📋 Copy Notes</button>
+                <button class="action-btn" id="btn-download-notes">💾 Export Markdown</button>
+                <button class="action-btn danger-btn" id="btn-clear-notes">Clear</button>
+              </div>
+            </div>
+
+            <div id="notes-empty-state" class="empty-state">
+              <div class="empty-icon">📝</div>
+              <h3>Notebook Is Empty</h3>
+              <p>Ask StudyAgent in Chat (e.g., <em>"Create a summary cheat sheet of Chemistry stoichiometry with key formulas"</em>) or load sample notes.</p>
+              <button class="primary-btn" id="btn-load-sample-notes">Load Sample Stoichiometry Cheat Sheet</button>
+            </div>
+
+            <div id="notes-content-wrapper" class="notes-content-wrapper" style="display: none;">
+              <div class="notes-paper" id="notes-rendered-content">
+                <!-- Synthesized markdown notes -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 6: POMODORO TIMER -->
+        <section class="tab-panel" id="timer-tab" role="tabpanel">
+          <div class="panel-inner timer-panel-center">
+            <div class="timer-card">
+              <div class="timer-mode-selector">
+                <button class="timer-mode-btn active" data-minutes="25" data-mode="Study">Study (25m)</button>
+                <button class="timer-mode-btn" data-minutes="5" data-mode="Short Break">Short Break (5m)</button>
+                <button class="timer-mode-btn" data-minutes="15" data-mode="Long Break">Long Break (15m)</button>
+              </div>
+
+              <!-- Circular Progress SVG -->
+              <div class="timer-circle-container">
+                <svg class="timer-svg" viewBox="0 0 240 240">
+                  <circle class="timer-circle-bg" cx="120" cy="120" r="105"></circle>
+                  <circle class="timer-circle-progress" id="timer-circle-stroke" cx="120" cy="120" r="105"></circle>
+                </svg>
+                <div class="timer-display-inner">
+                  <span class="timer-mode-label" id="timer-current-mode">Focus Session</span>
+                  <span class="timer-digits" id="timer-digits-display">25:00</span>
+                  <span class="timer-hint-label" id="timer-hint">Stay in flow</span>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="timer-controls-row">
+                <button class="timer-action-btn primary-timer-btn" id="btn-timer-toggle">
+                  <span id="timer-btn-text">Start Focus</span>
+                </button>
+                <button class="timer-action-btn secondary-timer-btn" id="btn-timer-reset">Reset</button>
+              </div>
+
+              <div class="timer-stats-footer">
+                <div class="timer-stat-box">
+                  <span class="stat-num" id="pomodoro-completed-count">0</span>
+                  <span class="stat-text">Sessions Completed</span>
+                </div>
+                <div class="timer-stat-box">
+                  <span class="stat-num" id="pomodoro-minutes-total">0</span>
+                  <span class="stat-text">Minutes Focused</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- RIGHT SIDEBAR (STUDY DASHBOARD) -->
+      <aside class="sidebar" id="study-sidebar">
+        <!-- Active Mission Card -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-header">
+            <span class="sidebar-title">🎯 Active Mission</span>
+            <span class="pulse-indicator"></span>
+          </div>
+          <p class="mission-topic" id="sidebar-mission-topic">Ready to learn</p>
+          <p class="mission-desc" id="sidebar-mission-desc">Prompt StudyAgent to generate flashcards, quizzes, or step-by-step solutions.</p>
+        </div>
+
+        <!-- Quick Mini Timer -->
+        <div class="sidebar-card mini-timer-card">
+          <div class="sidebar-card-header">
+            <span class="sidebar-title">⏱️ Quick Focus</span>
+            <span class="mini-timer-time" id="mini-timer-display">25:00</span>
+          </div>
+          <div class="mini-timer-bar">
+            <div class="mini-timer-fill" id="mini-timer-bar-fill" style="width: 100%;"></div>
+          </div>
+          <button class="mini-timer-btn" id="mini-timer-toggle-btn">Start Session</button>
+        </div>
+
+        <!-- Student Progress Snapshot -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-header">
+            <span class="sidebar-title">📊 Learning Stats</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-big-val" id="stat-cards-count">0</span>
+              <span class="stat-sub">Flashcards</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-big-val" id="stat-quiz-score">0%</span>
+              <span class="stat-sub">Avg Quiz Score</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-big-val" id="stat-tasks-done">0</span>
+              <span class="stat-sub">Plan Tasks Done</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-big-val" id="stat-focus-time">0m</span>
+              <span class="stat-sub">Focus Time</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Reasoning Explainer -->
+        <div class="sidebar-card agent-how-card">
+          <div class="sidebar-card-header">
+            <span class="sidebar-title">⚡ How Agent Works</span>
+          </div>
+          <ol class="agent-steps-list">
+            <li><strong>Reason</strong>: Formulates sub-goals from your query.</li>
+            <li><strong>Act</strong>: Dispatches tools (Flashcards, Quizzes, Solver, Planner).</li>
+            <li><strong>Observe</strong>: Evaluates and populates your study deck & notes.</li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+
+    <!-- SETTINGS & GEMINI API MODAL -->
+    <div class="modal-overlay" id="settings-modal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">⚙️ StudyAgent Configuration</h3>
+          <button class="modal-close-btn" id="btn-close-settings">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="config-section">
+            <label class="config-label" for="setting-engine-mode">AI Engine Provider</label>
+            <select id="setting-engine-mode" class="config-select">
+              <option value="autonomous">Autonomous Built-in Engine (Instant, Offline & Zero Key)</option>
+              <option value="gemini">Google Gemini Live API (Requires API Key)</option>
+            </select>
+            <p class="config-help">The built-in engine provides instant intelligent ReAct planning, flashcard generation, quizzes, and problem solving without external accounts.</p>
+          </div>
+
+          <div class="config-section" id="gemini-key-section" style="display: none;">
+            <label class="config-label" for="setting-gemini-key">Gemini API Key</label>
+            <input type="password" id="setting-gemini-key" class="config-input" placeholder="AIzaSy...">
+            <p class="config-help">Get a free key from <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>. Keys are stored safely in your browser's localStorage.</p>
+            
+            <label class="config-label" for="setting-gemini-model" style="margin-top: 12px;">Model Selection</label>
+            <select id="setting-gemini-model" class="config-select">
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended - Fast & Agentic)</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+            </select>
+
+            <button type="button" class="action-btn" id="btn-test-gemini-key" style="margin-top: 10px;">
+              Verify Key Connection
+            </button>
+            <span id="gemini-verify-result" class="verify-status"></span>
+          </div>
+
+          <div class="config-section">
+            <label class="config-label">Data Management</label>
+            <button type="button" class="action-btn danger-btn" id="btn-reset-all-data">
+              Reset All Workspace Data (Cards, Quizzes, Notes)
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="primary-btn" id="btn-save-settings">Save & Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANUAL CARD CREATION MODAL -->
+    <div class="modal-overlay" id="manual-card-modal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">+ Add Flashcard</h3>
+          <button class="modal-close-btn" id="btn-close-manual-card">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="config-section">
+            <label class="config-label" for="new-card-term">Front (Question or Term)</label>
+            <input type="text" id="new-card-term" class="config-input" placeholder="e.g. Mitochondria">
+          </div>
+          <div class="config-section">
+            <label class="config-label" for="new-card-def">Back (Explanation or Definition)</label>
+            <textarea id="new-card-def" class="config-input" rows="3" placeholder="e.g. Powerhouse of the cell, produces ATP through cellular respiration."></textarea>
+          </div>
+          <div class="config-section">
+            <label class="config-label" for="new-card-tag">Category / Subject Tag</label>
+            <input type="text" id="new-card-tag" class="config-input" placeholder="e.g. Biology, Formulas, History">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="primary-btn" id="btn-save-manual-card">Add to Deck</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Audio Chime for Pomodoro and Success (Synthesized with Web Audio API) -->
+  <script src="agent.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
